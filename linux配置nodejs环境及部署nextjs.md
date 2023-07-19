@@ -7,28 +7,27 @@
 https://nodejs.org/zh-cn/download
 
 解压二进制包
-tar -xvf   nodejs.tar.xz
+`tar -xvf   nodejs.tar.xz`
 
 改名
-mv node-v10.16.3-linux-x64  nodejs 
+`mv node-v10.16.3-linux-x64  nodejs `
 
 
 配置软链
-ln -s /download/nodejs/bin/npm /usr/local/bin/ 
+`ln -s /download/nodejs/bin/npm /usr/local/bin/ `
 
-ln -s /download/nodejs/bin/node /usr/local/bin/
+`ln -s /download/nodejs/bin/node /usr/local/bin/`
 
 检查是否成功
-node -v
+`node -v`
 
-npm -v
+`npm -v`
 
-移除软链
-unlink
+移除软链使用`unlink`
 
 
 # 安装pm2
-npm i pm2@latest -g
+`npm i pm2@latest -g`
 
-ln -s /download/nodejs/bin/pm2 /usr/local/bin/
+`ln -s /download/nodejs/bin/pm2 /usr/local/bin/`
 
