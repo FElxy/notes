@@ -40,6 +40,49 @@ XPath在XML解析和Web数据抓取中具有广泛的应用。
 
 5. 结合使用XPath和其他技术：XPath通常与其他技术一起使用，如XML解析库、HTML解析库、Web爬虫等。通过结合使用XPath和其他技术，可以实现更强大和灵活的数据处理和数据提取功能。例如，可以使用XPath和Python的lxml库来解析XML文档并提取所需的数据，或者使用XPath和XPath语法类似的CSS选择器来提取HTML文档中的数据。
 
+# JavaScript 调用 XPath 接口
+document.evaluate
+
+```js
+const xpathResult = document.evaluate(
+  xpathExpression, //  XPath 表达式
+  contextNode, // 表示本次查询的上下文节点
+  namespaceResolver, // 传入名空间前缀
+  resultType, // 指定所返回的 XPathResult 的类型
+  result, // 用以存储查询结果
+);
+```
+
+## 执行 XPath 查询
+使用 document.evaluate 方法来执行 XPath 查询。这个方法接受三个参数：XPath 表达式、上下文节点和命名空间解析器（通常为空）。
+```js
+const xpathResult = xmlDoc.evaluate(
+  'your_xpath_expression',
+  xmlDoc, 
+  null,
+  XPathResult.ANY_TYPE,
+  null
+);
+```
+
+## 处理结果
+```js
+// 获取第一个匹配的节点
+const node = xpathResult.singleNodeValue;
+
+// 获取所有匹配的节点
+const nodeList = [];
+let currentNode = xpathResult.iterateNext();
+while (currentNode) {
+  nodeList.push(currentNode);
+  currentNode = xpathResult.iterateNext();
+}
+
+// 获取文本内容
+const textContent = node.textContent;
+```
+
 >XPath 语法: https://www.runoob.com/xpath/xpath-syntax.html
 Introduction to using XPath in JavaScript: https://developer.mozilla.org/zh-CN/docs/Web/XPath/Introduction_to_using_XPath_in_JavaScript
+Document.evaluate(): https://developer.mozilla.org/zh-CN/docs/Web/API/Document/evaluate
 Xpath在线测试工具: https://www.toolnb.com/tools/xpath.html
