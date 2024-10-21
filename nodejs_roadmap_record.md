@@ -175,6 +175,82 @@ i.e. the directory from which you invoked the node command.
 
 __dirname returns the directory name of the directory containing the JavaScript source code file
 
+## Work with Files using the fs Module in Node.js
+Step 1 — Reading Files with readFile()
+```js
+const fs = require('fs').promises;
+
+async function readFile(filePath) {
+  try {
+    const data = await fs.readFile(filePath);
+    console.log(data.toString());
+  } catch (error) {
+    console.error(`Got an error trying to read the file: ${error.message}`);
+  }
+}
+```
+
+Step 2 — Writing Files with writeFile()
+```js
+const fs = require('fs').promises;
+
+async function openFile() {
+  try {
+    const csvHeaders = 'name,quantity,price'
+    await fs.writeFile('groceries.csv', csvHeaders);
+  } catch (error) {
+    console.error(`Got an error trying to write to a file: ${error.message}`);
+  }
+}
+
+async function addGroceryItem(name, quantity, price) {
+  try {
+    const csvLine = `\n${name},${quantity},${price}`
+    await fs.writeFile('groceries.csv', csvLine, { flag: 'a' });
+  } catch (error) {
+    console.error(`Got an error trying to write to a file: ${error.message}`);
+  }
+}
+
+(async function () {
+  await openFile();
+  await addGroceryItem('eggs', 12, 1.50);
+  await addGroceryItem('nutella', 1, 4);
+})();
+```
+This object has a flag key with the value a. Flags tell Node.js how to interact with the file on the system. By using the flag a, you are telling Node.js to append to the file, not overwrite it. If you don’t specify a flag, it defaults to w, which creates a new file if none exists or overwrites a file if it already exists. 
+
+Step 3 — Deleting Files with unlink()
+```js
+const fs = require('fs').promises;
+
+async function deleteFile(filePath) {
+  try {
+    await fs.unlink(filePath);
+    console.log(`Deleted ${filePath}`);
+  } catch (error) {
+    console.error(`Got an error trying to delete the file: ${error.message}`);
+  }
+}
+
+deleteFile('groceries.csv');
+```
+Step 4 — Moving Files with rename()
+```js
+const fs = require('fs').promises;
+
+async function moveFile(source, destination) {
+  try {
+    await fs.rename(source, destination);
+    console.log(`Moved file from ${source} to ${destination}`);
+  } catch (error) {
+    console.error(`Got an error trying to move the file: ${error.message}`);
+  }
+}
+
+moveFile('greetings-2.txt', 'test-data/salutations.txt');
+```
+
 
 ## Nodejs与浏览器的区别
 
