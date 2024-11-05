@@ -174,6 +174,24 @@ The process.cwd() method returns the **current working directory** of the Node.j
 i.e. the directory from which you invoked the node command.
 
 __dirname returns the directory name of the directory containing the JavaScript source code file
+__filename
+Create and edit controller.js in the api subdirectory in the src directory:
+```js
+console.log(__dirname)      // "/Users/Sam/dirname-example/src/api"
+console.log(process.cwd())  // "/Users/Sam/dirname-example"
+
+const fs = require('fs');
+const path = require('path');
+const dirPath = path.join(__dirname, '/pictures');
+
+fs.mkdirSync(dirPath);
+
+console.log(__filename);
+// Prints: /Users/mjr/example.js
+console.log(__dirname);
+// Prints: /Users/mjr
+```
+
 
 ## Work with Files using the fs Module in Node.js
 Step 1 — Reading Files with readFile()
@@ -218,6 +236,14 @@ async function addGroceryItem(name, quantity, price) {
   await addGroceryItem('nutella', 1, 4);
 })();
 ```
+```js
+var fs = require('fs');
+
+fs.appendFile('mynewfile1.txt', ' This is my text.', function (err) {
+  if (err) throw err;
+  console.log('Updated!');
+});
+```
 This object has a flag key with the value a. Flags tell Node.js how to interact with the file on the system. By using the flag a, you are telling Node.js to append to the file, not overwrite it. If you don’t specify a flag, it defaults to w, which creates a new file if none exists or overwrites a file if it already exists. 
 
 Step 3 — Deleting Files with unlink()
@@ -251,6 +277,135 @@ async function moveFile(source, destination) {
 moveFile('greetings-2.txt', 'test-data/salutations.txt');
 ```
 
+## Node.js File Paths
+```js
+import path from 'node:path';
+
+const notes = '/users/joe/notes.txt';
+
+path.dirname(notes); // /users/joe
+path.basename(notes); // notes.txt
+path.extname(notes); // .txt
+
+path.basename(notes, path.extname(notes)); // notes
+```
+```js
+const name = 'joe';
+path.join('/', 'users', name, 'notes.txt'); // '/users/joe/notes.txt'
+path.resolve('joe.txt'); // '/Users/joe/joe.txt' if run from my home folder
+path.resolve('tmp', 'joe.txt'); // '/Users/joe/tmp/joe.txt' if run from my home folder
+
+```
+If the first parameter starts with a slash, that means it's an absolute path:
+```js
+path.resolve('/etc', 'joe.txt'); // '/etc/joe.txt'
+```
+path.normalize() is another useful function, that will try and calculate the actual path, when it contains relative specifiers like . or .., or double slashes:
+```js
+path.normalize('/users/joe/..//test.txt'); // '/users/test.txt'
+```
+> https://nodejs.org/api/path.html
+
+
+## thread
+适合做的：responding to an Http request, talking to a database, talking to other servers 
+不适合的：CPU bound operations like calculating the Fibonacci of a number or checking if a number is prime or not or heavy machine learning stuff
+
+### child processes
+#### child_process.spawn()
+spawn("comand to run","array of arguments",optionsObject)
+```js
+const { spawn } = require("child_process")
+app.get("/ls", (req, res) => {
+  const ls = spawn("ls", ["-lash", req.query.directory])
+  ls.stdout.on("data", data => {
+    //Pipe (connection) between stdin,stdout,stderr are established between the parent
+    //node.js process and spawned subprocess and we can listen the data event on the stdout
+
+    res.write(data.toString()) //date would be coming as streams(chunks of data)
+    // since res is a writable stream,we are writing to it
+  })
+  ls.on("close", code => {
+    console.log(`child process exited with code ${code}`)
+    res.end() //finally all the written streams are send back when the subprocess exit
+  })
+})
+```
+#### child_process.fork()
+child_process.fork() is specifically used to spawn new nodejs processes. Like spawn, the returned childProcess object will have built-in IPC communication channel that allows messages to be passed back and forth between the parent and child.
+fork("path to module","array of arguments","optionsObject")
+```js
+const { fork } = require("child_process")
+const childProcess = fork("./forkedchild.js") //the first argument to fork() is the name of the js file to be run by the child process
+childProcess.send({ number: parseInt(req.query.number) }) //send method is used to send message to child process through IPC
+
+// forkedchild.js
+process.on("message", message => {
+Copy
+  //child process is listening for messages by the parent process
+  const result = isPrime(message.number)
+  process.send(result)
+  process.exit() // make sure to use exit() to prevent orphaned processes
+})
+
+```
+
+#### Worker threads
+```js
+const { workerData, parentPort } = require("worker_threads")
+//workerData will be the second argument of the Worker constructor in multiThreadServer.js
+const start = workerData.start
+const end = workerData.end
+// ....
+parentPort.postMessage({
+  //send message with the result back to the parent process
+  start: start,
+  end: end,
+  result: sum,
+})
+
+// main
+const { Worker } = require("worker_threads")
+
+function runWorker(workerData) {
+  return new Promise((resolve, reject) => {
+    //first argument is filename of the worker
+    const worker = new Worker("./sumOfPrimesWorker.js", {
+      workerData,
+    })
+    worker.on("message", resolve) //This promise is gonna resolve when messages comes back from the worker thread
+    worker.on("error", reject)
+    worker.on("exit", code => {
+      if (code !== 0) {
+        reject(new Error(`Worker stopped with exit code ${code}`))
+      }
+    })
+  })
+}
+
+  const worker1 = runWorker({ start: start1, end: end1 })
+  const worker2 = runWorker({ start: start2, end: end2 })
+  const worker3 = runWorker({ start: start3, end: end3 })
+  const worker4 = runWorker({ start: start4, end: end4 })
+  //Promise.all resolve only when all the promises inside the array has resolved
+  Promise.all([worker1, worker2, worker3, worker4])
+
+```
+This is because, we are dividing the work into 4 equal parts and allocating each part to a worker and parallelly (at the same time) executing the task.
+
+
+
+#### cluster
+Cluster is mainly used for vertically (adding more power to your existing machine) scale your nodejs web server. It is built on top of the child_process module. In an Http server, the cluster module uses child_process.fork() to automatically fork processes and sets up a master-slave architecture where the parent process distributes the incoming request to the child processes in a round-robin fashion. Ideally, the number of processes forked should be equal to the number of cpu cores your machine has.
+const cluster = require("cluster")
+```js
+if (cluster.isMaster) {
+  masterProcess()
+} else {
+  childProcess()
+}
+```
+Even though Node js provides great support for multi-threading, that doesn't necessarily mean we should always make our web applications multi-threaded. Node js is built in such a way that the default single-threaded behavior is preferred over the multi-threaded behaviour for web-servers because web-servers tend to be IO-bound and nodejs is great for handling asynchronous IO operations with minimal system resources and Nodejs is famous for this feature. The extra overhead and complexity of another thread or process makes it really difficult for a programmer to work with simple IO tasks. But there are some cases where a web server does CPU bound operations and in such cases, it is really easy to spin up a worker thread or child process and delegate that task. So, our design architecture really boils down to our application's need and requirements and we should make decisions based on that.
 
 ## Nodejs与浏览器的区别
 
