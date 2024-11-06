@@ -156,6 +156,28 @@ for(let j = 0; j < 100000000; j++) {
   i++;
 }
 ```
+
+A process.nextTick callback is added to process.nextTick queue. A Promise.then() callback is added to promises microtask queue. A setTimeout, setImmediate callback is added to macrotask queue.
+Calling setTimeout(() => {}, 0) will execute the function at the end of next tick, much later than when using nextTick() which prioritizes the call and executes it just before the beginning of the next tick.
+```js
+const baz = () => console.log('baz');
+const foo = () => console.log('foo');
+const zoo = () => console.log('zoo');
+const start = () => {
+  console.log('start');
+  setImmediate(baz);
+  new Promise((resolve, reject) => {
+    resolve('bar');
+  }).then(resolve => {
+    console.log(resolve);
+    process.nextTick(zoo);
+  });
+  process.nextTick(foo);
+};
+start();
+// start foo bar zoo baz
+```
+
 # database
 ORM
 An ORM is known as Object Relational Mapper. This is a tool or a level of abstraction which maps(converts) data in a relational database into programmatic objects that can be manipulated by a programmer using a programming language(usually an OOP language).
@@ -552,3 +574,236 @@ Example: 1.2.3
 2 is the minor version.
 3 is the patch version.
 
+# streams
+1. Memory efficiency: you don’t need to load large amounts of data in memory before you are able to process it
+2. Time efficiency: it takes significantly less time to start processing data as soon as you have it, rather than having to wait with processing until the entire payload has been transmitted
+
+4 types
+Writable: `fs.createWriteStream()`
+Readable: `fs.createReadStream()`
+Duplex: streams that are both Readable and Writable.  `net.Socket`
+Transform: streams that can modify or transform the data as it is written and read.  For example, in the instance of file-compression, you can write compressed data and read decompressed data to and from a file.
+
+in a Node.js based HTTP server, request is a readable stream and response is a writable stream. TCP sockets, TLS stack and other connections are all based on Node.js streams.
+```js
+const Stream = require('stream')
+const readableStream = new Stream.Readable()
+readableStream.push('ping!')
+readableStream.push('pong!')
+```
+async iterator
+```js
+import * as fs from 'fs';
+
+async function logChunks(readable) {
+  for await (const chunk of readable) {
+    console.log(chunk);
+  }
+}
+
+const readable = fs.createReadStream(
+  'tmp/test.txt', {encoding: 'utf8'});
+logChunks(readable);
+```
+
+```js
+import {Readable} from 'stream';
+
+async function readableToString2(readable) {
+  let result = '';
+  for await (const chunk of readable) {
+    result += chunk;
+  }
+  return result;
+}
+
+const readable = Readable.from('Good morning!', {encoding: 'utf8'});
+assert.equal(await readableToString2(readable), 'Good morning!');
+```
+
+`stream.Readable.from(iterable, [options])`
+```js
+const { Readable } = require('stream');
+
+async function * generate() {
+  yield 'hello';
+  yield 'streams';
+}
+
+const readable = Readable.from(generate());
+
+readable.on('data', (chunk) => {
+  console.log(chunk);
+});
+```
+
+Two Reading Modes
+flowing mode,data is read from the underlying system automatically
+paused mode,the stream.read() method must be called explicitly to read chunks of data from the stream.
+
+```js
+var fs = require("fs");
+var data = '';
+
+var readerStream = fs.createReadStream('file.txt'); //Create a readable stream
+
+readerStream.setEncoding('UTF8'); // Set the encoding to be utf8. 
+
+// Handle stream events --> data, end, and error
+readerStream.on('data', function(chunk) {
+   data += chunk;
+});
+
+readerStream.on('end',function() {
+   console.log(data);
+});
+
+readerStream.on('error', function(err) {
+   console.log(err.stack);
+});
+```
+
+```js
+var fs = require('fs');
+var readableStream = fs.createReadStream('file.txt');
+var data = '';
+var chunk;
+
+readableStream.on('readable', function() {
+    while ((chunk=readableStream.read()) != null) {
+        data += chunk;
+    }
+});
+
+readableStream.on('end', function() {
+    console.log(data)
+});
+```
+All Readable streams begin in paused mode but can be switched to flowing mode in one of the following ways:
+Adding a 'data' event handler.
+Calling the stream.resume() method.
+Calling the stream.pipe() method to send the data to a Writable.
+
+The Readable can switch back to paused mode using one of the following:
+
+If there are no pipe destinations, by calling the stream.pause() method.
+If there are pipe destinations, by removing all pipe destinations. Multiple pipe destinations may be removed by calling the stream.unpipe() method.
+
+```js
+// Write 'hello, ' and then end with 'world!'.
+const fs = require('fs');
+const file = fs.createWriteStream('example.txt');
+file.write('hello, ');
+file.end('world!');
+// Writing more now is not allowed!
+```
+Calling the writable.end() method signals that no more data will be written to the Writable. If provided, the optional callback function is attached as a listener for the 'finish' event.
+
+Using a writable stream you can read data from a readable stream:
+```js
+const Stream = require('stream')
+
+const readableStream = new Stream.Readable()
+const writableStream = new Stream.Writable()
+
+writableStream._write = (chunk, encoding, next) => {
+    console.log(chunk.toString())
+    next()
+}
+
+readableStream.pipe(writableStream)
+
+readableStream.push('ping!')
+readableStream.push('pong!')
+
+writableStream.end()
+```
+You can also use async iterators to write to a writable stream, which is recommended
+```js
+import * as util from 'util';
+import * as stream from 'stream';
+import * as fs from 'fs';
+import {once} from 'events';
+
+const finished = util.promisify(stream.finished); // (A)
+
+async function writeIterableToFile(iterable, filePath) {
+  const writable = fs.createWriteStream(filePath, {encoding: 'utf8'});
+  for await (const chunk of iterable) {
+    if (!writable.write(chunk)) { // (B)
+      // Handle backpressure
+      await once(writable, 'drain');
+    }
+  }
+  writable.end(); // (C)
+  // Wait until done. Throws if there are errors.
+  await finished(writable);
+}
+
+await writeIterableToFile(
+  ['One', ' line of text.\n'], 'tmp/log.txt');
+assert.equal(
+  fs.readFileSync('tmp/log.txt', {encoding: 'utf8'}),
+  'One line of text.\n');
+```
+
+pipeline()
+Piping is a mechanism where we provide the output of one stream as the input to another stream. It is normally used to get data from one stream and to pass the output of that stream to another stream. 
+piping is used to process streamed data in multiple steps.
+
+```js
+const { pipeline } = require('stream');
+const fs = require('fs');
+const zlib = require('zlib');
+
+// Use the pipeline API to easily pipe a series of streams
+// together and get notified when the pipeline is fully done.
+// A pipeline to gzip a potentially huge video file efficiently:
+
+pipeline(
+  fs.createReadStream('The.Matrix.1080p.mkv'),
+  zlib.createGzip(),
+  fs.createWriteStream('The.Matrix.1080p.mkv.gz'),
+  (err) => {
+    if (err) {
+      console.error('Pipeline failed', err);
+    } else {
+      console.log('Pipeline succeeded');
+    }
+  }
+);
+```
+
+在 Node.js 中，`child_process`、`cluster` 和 `worker_threads` 是处理并发任务的三种不同方式。它们各有特点和适用场景。以下是它们的区别：
+
+### 1. `child_process`
+- **定义**：用于创建独立的子进程，并执行独立的任务。
+- **工作方式**：每个子进程运行在其独立的内存空间中，与主进程通过消息传递（IPC，进程间通信）进行通信。
+- **用途**：适用于执行不依赖主进程状态的任务，比如在子进程中运行一个外部命令、处理繁重的计算任务、或者执行文件 I/O 操作。
+- **缺点**：由于每个进程有独立的内存空间，开销较大（内存占用更高），并且通信成本较高。
+- **适用场景**：子进程适用于 CPU 密集型任务，比如图像处理、文件处理、执行外部程序等。
+
+### 2. `cluster`
+- **定义**：`cluster` 模块是基于 `child_process` 构建的，用于实现多核负载均衡。
+- **工作方式**：`cluster` 模块允许创建多个 Node.js 进程（称为“工作进程”），它们共享同一个端口（例如 HTTP 服务器端口），由 `cluster` 模块自动分配请求给各个工作进程。
+- **用途**：适用于在多核服务器上扩展 Node.js 应用程序，通过多进程实现负载均衡。
+- **缺点**：与 `child_process` 一样，`cluster` 每个进程都有独立的内存空间，通信成本较高。并且不适用于共享大量状态信息的场景。
+- **适用场景**：`cluster` 非常适合创建高并发的 HTTP 服务器或其他需要充分利用 CPU 核心的应用程序。
+
+### 3. `worker_threads`
+- **定义**：`worker_threads` 模块用于创建轻量级线程，线程之间共享同一个内存空间。
+- **工作方式**：每个 Worker 线程可以并行执行任务，线程间可以共享内存（使用 `SharedArrayBuffer`），这使得在处理数据时无需拷贝大量数据，提高了性能。
+- **用途**：适用于执行 CPU 密集型任务，例如大型数组或复杂计算的处理。
+- **优点**：`worker_threads` 的开销低，线程间通信成本低，并且可以共享内存，这使它适合需要频繁通信的场景。
+- **缺点**：由于线程共享内存，如果没有同步机制，容易引发数据竞争问题。
+- **适用场景**：适合于 Node.js 内部进行密集型的计算或数据处理任务，尤其适合需要高效处理共享数据的场景，比如机器学习、图像处理等计算密集型任务。
+
+### 总结对比
+
+| 模块           | 进程/线程   | 是否共享内存 | 适用场景                      | 优缺点                        |
+|----------------|-------------|--------------|-------------------------------|-------------------------------|
+| `child_process`| 独立进程    | 否           | 独立任务，外部命令执行        | 开销大，进程间通信较复杂      |
+| `cluster`      | 独立进程    | 否           | 多核负载均衡，高并发服务器     | 进程间通信复杂，开销较大      |
+| `worker_threads`| 线程       | 是           | CPU 密集型任务，共享内存计算   | 开销小，但需处理数据竞争问题  |
+
+选择哪种方式取决于具体需求：`worker_threads` 更适合数据密集型计算，而 `child_process` 和 `cluster` 适用于处理隔离任务或扩展服务器负载的情况。
