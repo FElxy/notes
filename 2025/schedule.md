@@ -21,12 +21,17 @@
 
 目标：不仅会用框架，还能理解其内部机制、合理做架构选型
 
-| 模块                      | 重点内容                                   |
-| ----------------------- | -------------------------------------- |
-| Vue3 & React18          | 响应式系统 / Fiber 架构 / Diff 算法 / Suspense  |
-| Hooks / Composition API | 状态组织策略 / 逻辑复用设计 / 自定义 hook             |
-| 状态管理                    | Redux / MobX / Pinia / Zustand 的对比与适用性 |
-| SSR/SSG/CSR             | 原理对比、Next.js / Nuxt 应用设计、hydration 流程  |
+| 模块                            | 重点内容                                                 | 推荐实践 & 输出                       |
+| ----------------------------- | ---------------------------------------------------- | ------------------------------- |
+| **Vue3 / React18 深度原理**       | Virtual DOM / Fiber / Composition API / Hooks / 渲染优化 | 手写 mini-react 或 mini-vue，配合调试   |
+| **状态管理体系**                    | Redux / Pinia / Zustand / Jotai / Context 优劣分析       | 搭建中后台状态层模块                      |
+| **路由系统**                      | 动态路由、懒加载、守卫、嵌套路由                                     | 自动路由插件开发                        |
+| **渲染模式**                      | CSR / SSR / SSG / Hydration / Streaming              | 使用 Nuxt3 / Next.js 实战           |
+| **Electron 桌面端开发**            | 主进程 / 渲染进程 / IPC 通信 / 自动更新 / 打包策略                    | 构建一个跨平台桌面 App（例如 Markdown 编辑器）  |
+| **鸿蒙 HarmonyOS Web/ArkTS 开发** | 鸿蒙前端生态（Web vs ArkTS）/ ArkTS UI DSL / 系统能力访问          | 尝试用 ArkTS + JS 构建一个系统级卡片组件或简单应用 |
+| **移动端 H5/Hybrid/WebApp**      | 适配策略、埋点策略、权限系统、小程序兼容层                                | PWA 实战、封装统一分享组件                 |
+| **Flutter Web/移动端**     | Flutter 渲染机制、状态管理（Riverpod/Bloc）、Flutter Web 适配、Flutter + 前端联动 | 构建一个 Flutter 通用组件库，兼容 Web/Mobile；实现 Flutter 调用 JS、调用 API、统一配置化 UI |
+
 
 ---
 
