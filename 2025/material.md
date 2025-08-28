@@ -6,6 +6,8 @@ https://juejin.cn/column/7493879367728676874
 
 大模型面试：https://github.com/km1994/LLMs_interview_notes
 
+AI Agent 编程 https://juejin.cn/post/7529101019687567403?searchId=20250828162719DC2E718ECAB2C05C0625#heading-35
+
 体现项目管理能力
 多端开发能力
 善用AI
