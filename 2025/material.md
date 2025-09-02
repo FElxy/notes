@@ -8,6 +8,8 @@ https://juejin.cn/column/7493879367728676874
 
 AI Agent 编程 https://juejin.cn/post/7529101019687567403?searchId=20250828162719DC2E718ECAB2C05C0625#heading-35
 
+深度学习：https://developers.google.com/machine-learning/crash-course/linear-regression?hl=zh-cn
+
 体现项目管理能力
 多端开发能力
 善用AI
