@@ -37,10 +37,44 @@ https://github.com/pro-collection/interview-question/issues/1023
 
 2. 宏任务、微任务
   * 举例哪些是宏任务、微任务
+  宏任务（Macro）：
+    - setTimeout、setInterval
+    - I/O 操作、事件回调
+    - setImmediate（Node.js）
+    - requestAnimationFrame（浏览器）
+    - UI 渲染
+
+    微任务（Micro）：
+    - Promise.then/catch/finally
+    - queueMicrotask
+    - MutationObserver（浏览器）
+    - process.nextTick（Node.js，优先级最高）
   * 为什么要设计微任务机制？它解决了什么问题？
+  微任务机制解决了在单个宏任务执行后、浏览器渲染前需要执行一些高优先级回调的需求，主要为了确保异步操作的顺序可控和提升响应性能。
+
+
 https://github.com/pro-collection/interview-question/issues/47
 https://github.com/pro-collection/interview-question/issues/998
 4. 浏览器的事件循环和node的事件循环区别
+  1. 架构设计目标不同
+  浏览器：优先响应用户交互，保证页面流畅
+
+  Node.js：高效处理大量 I/O 操作，最大化吞吐量
+
+  2. 阶段划分不同
+  浏览器：简单的宏任务/微任务模型
+
+  Node.js：精细的6阶段划分，每个阶段专攻特定任务（timers → pending → idle → poll → check → close）
+
+  3. 特有API
+  浏览器特有：requestAnimationFrame、渲染更新
+
+  Node.js特有：process.nextTick、setImmediate
+
+  4. I/O处理方式
+  浏览器：主要处理用户事件、网络请求、DOM操作
+
+  Node.js：处理文件、网络、子进程等所有类型I/O
 https://github.com/pro-collection/interview-question/issues/202
 5. 变量
   * 变量、变量提升
@@ -75,23 +109,45 @@ https://github.com/pro-collection/interview-question/issues/202
     d. 如果该闭包会一直使用，那么它可以作为全局变量而存在；但如果使用频率不高，而且占用内存又比较大的话，那就尽量让它成为一个局部变量。
   * 如何产生的闭包
   * 闭包有什么应用场景和潜在问题
+    1. 数据封装：创建私有变量和方法，实现信息隐藏
+    2. 模块模式：实现模块化的代码组织
+    3. 防抖节流：控制函数执行频率
 8. this
   * this的理解
-    全局执行上下文中的 this 是指向 window 对象的。严格模式是undefined
-
+    1. 全局执行上下文中的 this 是指向 window 对象的。严格模式是undefined
+    2. 类中的this指向实例
+    3. 函数中的this：箭头函数、普通函数
   * 改变this
     1. call，bind，apply
     2. 通过对象调用方法设置。使用对象来调用其内部的一个方法，该方法的 this 是指向对象本身的。
     3. 构造函数设置。new对象this指向新对象
     4. ES6 中的箭头函数并不会创建其自身的执行上下文，所以箭头函数中的 this 取决于它的外部函数。
 
-6. 异步方案
+9. 异步方案
   * Promise 有几种状态？状态改变是不可逆的吗？
   * Promise 中 throw new Error() 和 Promise.reject() 有什么区别？
   * 如何实现 Promise.all 和 Promise.race？如果其中一个 Promise 失败，它们的行为分别是什么？
   * async/await 的原理是什么？它和 Generator 有什么关系？
   * 使用 async/await 时，如何优雅地处理错误？
 
+10. 原型和原型链
+原型是 JavaScript 对象继承属性和方法的机制，原型链是通过 __proto__ 链接起来的对象链条，用于实现属性和方法的查找。
+  每个对象都有一个原型对象，从中继承属性和方法，
+    - 函数的 prototype 属性指向原型对象
+    - 对象的 __proto__ 属性指向其原型
+  
+  原型链：对象通过 __proto__ 连接形成的链条
+    - 属性查找时，沿着原型链向上搜索
+    - 链的尽头是 Object.prototype，其 __proto__ 为 null
+
+  ```
+  // 设置原型（现代方式）
+  Object.setPrototypeOf(child, parent);
+
+  // 获取原型（现代方式）
+  console.log(Object.getPrototypeOf(child) === parent); // true
+
+  ```
 # 浏览器渲染原理 & 性能优化
 
 ## 从输入 URL 到页面展示，这中间发生了什么？
@@ -249,7 +305,20 @@ https://github.com/pro-collection/interview-question/issues/202
 | 数据链路层    | 网络接口层       | Ethernet, PPP, 802.11 (Wi-Fi)   |
 | 物理层      | 网络接口层       | 光纤、电缆、无线电波、硬件接口                 |
 
+http
+三次握手
 
+http2.0
+https
+cors
+
+TCP/IP 协议通过确认和重传、滑动窗口、序列号以及超时重传时间等机制，保证了数据包传输的有序可靠性。
+
+DNS（Domain Name System，域名系统）是因特网上用于将主机名转换为 IP 地址的协议。
+
+在使用 DNS 协议进行主机名解析时，系统首先查询本地 DNS 缓存。如果缓存中不存在结果，系统将向本地 DNS 服务器发出请求，并逐级向上查找，直到找到权威 DNS 服务器并获得解析结果。
+
+TCP队头阻塞
 # 框架
 
 # 工程化
