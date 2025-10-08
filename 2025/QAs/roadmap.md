@@ -178,7 +178,7 @@ https://github.com/pro-collection/interview-question/issues/202
     * 客户端回复ACK确认（ACK=1,Ack=v+1）,客户端进入TIME_WAIT状态，等待2MSL，服务端收到ACK后立即关闭连接，客户端2MSL超时后关闭连接
 3. 准备渲染进程
   * 如果是同一站点，那么复用渲染进程；其他情况，打开新的页面使用新的渲染进程
-  * 渲染进程准备好了后，进入到提交稳稳当阶段
+  * 渲染进程准备好了后，进入到提交文档阶段
 4. 提交文档
   * 浏览器进程将网络进程接收到的HTML数据提交给渲染进程
 
@@ -306,7 +306,6 @@ https://github.com/pro-collection/interview-question/issues/202
 | 物理层      | 网络接口层       | 光纤、电缆、无线电波、硬件接口                 |
 
 http
-三次握手
 
 http2.0
 https
@@ -326,6 +325,22 @@ TCP队头阻塞
 # 跨端
 
 # AI
+
+# 优化
+## 前端优化
+打包构建优化：核心是减小体积和提升速度，主要通过 Tree Shaking、代码分割、缓存等手段。
+
+加载性能优化：关注用户从输入 URL 到看到内容的速度，涉及资源预加载、懒加载和缓存策略。
+
+运行时性能优化：关注页面运行时的流畅度，包括 JS 执行效率、渲染性能和内存管理。
+
+框架级优化：针对 React/Vue 等框架，使用其提供的 memo、useCallback 等 API 避免不必要的渲染。
+
+网络与资源优化：聚焦于图片、请求和传输协议，比如使用 WebP 格式和 HTTP/2。
+
+用户体验优化：提升用户感知，例如使用骨架屏、优化核心 Web 指标（LCP, FID, CLS）。
+
+开发与工程化优化：保障长期可维护性，通过自动化工具、代码规范和监控体系来实现。
 
 
 https://github.com/danielmapar/NodeJSAdvancedConcepts
