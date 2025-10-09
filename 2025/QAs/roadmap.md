@@ -151,6 +151,8 @@ https://github.com/pro-collection/interview-question/issues/202
 # 浏览器渲染原理 & 性能优化
 
 ## 从输入 URL 到页面展示，这中间发生了什么？
+输入URL → DNS解析 → 建立TCP → 建立TLS → 发送HTTP请求 → 服务器响应 → 浏览器解析渲染 → 页面展示
+
 1. 用户输入
   * 如果是搜索内容，地址栏使用默认搜索引擎搜索内容
   * 如果是URL，当前页面执行beforeunload事件，如果没有监听或者同意继续后，进入加载状态
@@ -341,6 +343,7 @@ TCP队头阻塞
 用户体验优化：提升用户感知，例如使用骨架屏、优化核心 Web 指标（LCP, FID, CLS）。
 
 开发与工程化优化：保障长期可维护性，通过自动化工具、代码规范和监控体系来实现。
+
 
 
 https://github.com/danielmapar/NodeJSAdvancedConcepts
