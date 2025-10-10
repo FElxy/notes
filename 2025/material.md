@@ -13,3 +13,5 @@ AI Agent 编程 https://juejin.cn/post/7529101019687567403?searchId=202508281627
 体现项目管理能力
 多端开发能力
 善用AI
+
+https://www.yuque.com/yuqueyonghua2m9wj/web_food?#
