@@ -8,25 +8,13 @@ JavaScript 是单线程的。事件循环是用来协调同步任务和异步任
 Node.js 也有事件循环，但分为多个阶段（timers、poll、check等），微任务会在每个阶段后执行。
 浏览器中则是 宏任务 → 微任务 → 渲染 → 下一轮。
 
+### 函数柯里化
+
 ## websocket
 1. 数据传输方式
 2. 状态码
 3. 怎么实现重连
 
-## 断点续传
-1. 文件怎么分片
-2. 具体怎么传
-3. indexDB存储上限
-IndexedDB 的存储上限不是固定值，而是动态配额。
-一般来说：
-
-桌面 Chrome 等 Chromium 浏览器：单源最多可用几 GB（约占磁盘空间 1%～10%）；
-
-Safari / iOS 环境更严格（默认约 50MB～500MB）；
-
-超出时会触发 QuotaExceededError；
-
-可用 navigator.storage.estimate() 查询配额，并通过 navigator.storage.persist() 申请持久存储。
 ## https
 1. CA证书是从哪里获取的
 2. 怎么保证CA的有效性
@@ -49,14 +37,32 @@ Safari / iOS 环境更严格（默认约 50MB～500MB）；
 👉 同时支持 0-RTT 模式：如果是重连，可直接复用上次的会话密钥，几乎无延迟。
 
 
+
 ## fiber
 1. 具体做了什么事情
 2. 具体场景的执行优先级
 3. 怎么进行任务终止的
 
+
+## 断点续传
+1. 文件怎么分片
+2. 具体怎么传
+3. indexDB存储上限
+IndexedDB 的存储上限不是固定值，而是动态配额。
+一般来说：
+
+桌面 Chrome 等 Chromium 浏览器：单源最多可用几 GB（约占磁盘空间 1%～10%）；
+
+Safari / iOS 环境更严格（默认约 50MB～500MB）；
+
+超出时会触发 QuotaExceededError；
+
+可用 navigator.storage.estimate() 查询配额，并通过 navigator.storage.persist() 申请持久存储。
+
+
 ### 虚拟滚动列表和虚拟dom有什么相似与区别
 ### 文件导出重难点是什么
 ### 写一个多线程执行任务的最短时间，比如有一个tasks数组，记录了每个任务的执行时间，有一个数n是当前有n个执行器，分别可以执行tasks里面的人物，怎么分配执行时间最短
-### 函数柯里化
+
 
 
