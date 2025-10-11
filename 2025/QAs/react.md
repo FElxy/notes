@@ -4,7 +4,12 @@ https://www.yuque.com/yuqueyonghua2m9wj/web_food/tpo1np
 # react
 ## 核心
 ### 核心思路
-声明式、组件化、通用性
+React 核心思想：**声明式 + 组件化 + 单向数据流 + 虚拟 DOM**。
+
+* **声明式**：只描述界面状态，React 自动更新 UI。
+* **组件化**：界面拆分成可复用组件，各自管理状态和逻辑。
+* **单向数据流**：数据从父到子，便于调试和维护。
+* **虚拟 DOM**：先在内存中 diff，再最小化更新真实 DOM，提高性能。
 
 ### fiber
 React Fiber 是一种新的协调引擎，用来提高 React 应用的性能和响应能力。
