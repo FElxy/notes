@@ -11,6 +11,17 @@ React 核心思想：**声明式 + 组件化 + 单向数据流 + 虚拟 DOM**。
 * **单向数据流**：数据从父到子，便于调试和维护。
 * **虚拟 DOM**：先在内存中 diff，再最小化更新真实 DOM，提高性能。
 
+### react 是如何实现页面的快速响应？
+原因：在浏览器中，每秒渲染约 60 帧，也就是每一帧只能使用大约 16.6ms 来完成所有工作，包括 JS 执行、样式计算、布局和绘制。而 JS 线程和渲染线程是互斥的，如果 JS 执行时间过长（比如一次性渲染大量组件），就会阻塞渲染线程，导致页面掉帧或者卡顿。
+
+方案：React 18 引入了时间切片（Time Slicing）机制。它的核心思想是：把原本同步、不可中断的更新过程拆分成多个小任务，分布在多帧中执行，并且在每一帧中预留一部分时间给浏览器渲染。将同步的更新变为可中断的异步更新。
+
+结果：
+✅ 避免长时间占用主线程，防止页面卡顿
+
+✅ 优先处理用户交互等高优任务，提升响应性
+
+
 ### fiber
 React Fiber 是一种新的协调引擎，用来提高 React 应用的性能和响应能力。
 Fiber 通过增量渲染、可中断与恢复、链表结构和优先级调度等机制，使得 React 可以更灵活地处理大量更新和复杂组件树。
@@ -20,6 +31,19 @@ Fiber 通过增量渲染、可中断与恢复、链表结构和优先级调度�
 渲染：在渲染阶段，React 会遍历组件树，并构建一个 Fiber 树。Fiber 树中的每个节点代表一个组件，并包含组件的状态、属性等信息。
 更新：当组件的状态或属性发生变化时，React 会触发更新。Fiber 会根据变化的类型和优先级来决定如何更新组件。
 提交：在更新阶段完成后，React 会将 Fiber 树转换为实际的 DOM 树，并提交给浏览器进行渲染。
+
+#### fiber 是如何实现时间切片的？
+React Fiber 实现时间切片主要依赖于两个核心功能：任务分割和任务优先级。
+
+任务分割是指将一个大的渲染任务切割成多个小任务，每个小任务只负责一小部分 DOM 更新。React Fiber 使用 Fiber 节点之间的父子关系，将一个组件树分割成多个”片段“，每个“片段”内部是一颗 Fiber 子树，多个“片段”之间可以交错执行，实现时间切片。
+
+任务优先级是指 React Fiber 提供了一套基于优先级的算法来决定哪些任务应该先执行，哪些任务可以放到后面执行。React Fiber 将任务分成多个优先级级别，较高优先级的任务在进行渲染时会优先进行，从而确保应用程序的响应性和性能。
+
+1. React Fiber 会将渲染任务划分成多个小任务，每个小任务一般只负责一小部分 DOM 更新。
+2. React Fiber 将这些小任务保存到任务队列中，并按照优先级进行排序和调度。
+3. 当浏览器处于空闲状态时，React Fiber 会从任务队列中取出一个高优先级的任务并执行，直到任务完成或者时间片用完。
+4. 如果任务完成，则将结果提交到 DOM 树上并开始下一个任务。如果时间片用完，则将任务挂起，并将未完成的工作保存到 Fiber 树中，返回控制权给浏览器。
+5. 当浏览器再次处于空闲状态时，React Fiber 会再次从任务队列中取出未完成的任务并继续执行，直到所有任务完成。
 
 #### 👉「Fiber 是如何终止（中断）渲染任务的？」
 
@@ -328,5 +352,55 @@ useRouteMatch
 
 useLocation
 
+### React v18中的hooks
+useSyncExternalStore：是一个推荐用于读取和订阅外部数据源的 hook（如 Redux、Zustand、自定义全局状态）
+useTransition：作用：标记“非紧急更新”，用于优化交互体验，把一些状态更新标记为“过渡任务（Transition）”，React 可以打断这些任务，提高响应速度，常用于：搜索过滤、大数据渲染、切换选项卡等
+useDeferredValue：对某个值做“延迟处理”，避免每次变化都立刻触发重渲染，常用于搜索建议、输入联想
+useInsertionEffect：用于在 DOM 更新前插入样式（CSS-in-JS 库使用），执行时机比 useLayoutEffect 更早
+useId() 作用：生成在客户端与服务端一致的稳定唯一 ID，用于可访问性标签或表单元素 id/for 绑定。
+
 ### redux相关
 
+### react 18 19新特性
+React 18 引入了**并发渲染**，**不再是同步阻塞渲染\React 可以“中断”和“恢复”渲染，提高流畅度
+**自动批处理**、以前只有事件内 setState 会一起批处理，现在Promise、setTimeout、异步请求中也会自动批处理
+Suspense SSR 和新根 API，这些提升了性能和开发体验。
+
+React 19 是一次架构级革新，它通过 Server Components 和 Actions API 把 React 从“前端渲染框架”提升为“前后端一体化框架”，实现减少 JS 体积、直连数据库、自动表单处理等功能，是未来 React 应用的主流模式。
+
+### 如何监听路由变化？
+基于useEffect，和useLocation，通过useEffect监听当前location的变化
+```
+const location = useLocation();
+useEffect(() => {
+  //记录路径
+}, [location]);
+```
+
+### react-router 页面跳转时，是如何传递下一个页面参数的？
+1. 路由参数（Route Parameters）：（如 /users/:id）props.match.params获取
+2. 查询参数（Query Parameters）：如 /users?id=123&name=John props.location.search
+3. 路由状态（Route State）：props.location.state 
+路由状态仅在通过 history.push 或 history.replace 导航到新页面时才可用。如果用户通过浏览器的前进/后退按钮进行导航，或者直接输入 URL 地址访问页面，路由状态将不会被保留。
+4. 上下文（Context）：上下文功能共享路由相关的数据。
+
+### 父组件调用子组件的方法
+函数组件、Hook组件
+在 React 中父组件不能直接调用子组件的方法，但我们可以通过 ref 配合 forwardRef 和 useImperativeHandle 在函数组件中显式暴露子组件方法给父组件调用。
+
+### forwardRef作用是什么？
+forwardRef 是 React 提供的一个高阶函数，它可以让你在函数组件中访问子组件的 ref，并把该 ref 传递给子组件。
+
+### createContext 和 useContext 有什么区别， 是做什么用的
+createContext和useContext是React中用于处理上下文（Context）的两个钩子函数，它们用于在组件之间共享数据。
+
+createContext：createContext用于创建一个上下文对象，并指定初始值。它返回一个包含Provider和Consumer组件的对象。
+
+useContext：useContext用于在函数组件中访问上下文的值。它接受一个上下文对象作为参数，并返回当前上下文的值。
+
+### 遍历渲染节点列表， 为什么要加 key 
+
+key 是用来唯一标识列表中的每个节点，帮助 React 在进行 Diff 算法时准确判断哪些元素被新增、删除或移动，从而实现高效更新，避免不必要的重新渲染。
+
+为什么不能用 index 作为 key
+使用 index 时，如果列表发生插入/删除操作，index 会改变，导致 React 错误判断节点身份

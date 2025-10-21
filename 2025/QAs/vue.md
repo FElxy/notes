@@ -13,6 +13,20 @@ Vue 内部维护了一个异步任务队列，用于存储nextTick的回调函�
 Vue 在更新 DOM 后，会检查这个异步任务队列是否为空。如果不为空，会取出队列中的第一个任务并执行它。
 这样就保证了在 DOM 更新完成后，nextTick的回调函数能够按照调用的顺序依次执行。
 
+## Vue 的 ref 和 reactive 在底层原理上有什么区别？
+reactive 是通过 Proxy 代理整个对象 来实现响应式的，依赖收集发生在对象属性的读写过程中；
+ref 是把一个值包装在一个对象的 .value 属性中，通过 对 .value 的 get/set 拦截 来触发依赖收集。
+
+reactive 针对 对象类型（Object、Array、Map等）
+
+ref 针对 基本类型 + 对象包裹成单值容器
+
+在 Vue 3 中，reactive 是通过 Proxy 对对象进行代理，从对象属性的 get 和 set 中完成依赖收集和更新触发，因此适用于对象类型数据；而 ref 是使用一个带有 getter/setter 的对象来包裹一个值，只有通过访问 .value 才能触发响应式，它适合基本类型或希望明确控制响应式的场景。可以说，reactive 关注的是对象属性层面，而 ref 关注的是值本身，这是它们在底层原理的本质区别。
+
+## 如何收集依赖的
+Vue 的依赖收集是通过 在访问数据时记录当前副作用函数（effect），并把它加入该属性的依赖集合中实现的。
+当数据发生变化时，Vue 会找到对应依赖并触发执行，从而实现视图更新。Vue 2 使用 defineProperty，Vue 3 使用 Proxy，底层原理都是“访问收集依赖，修改触发更新”。
+
 ## 介绍一下 component 动态组件
 动态组件使用特殊的<component>标签结合is属性来实现。is属性可以接受一个字符串或变量，用于指定要渲染的组件名称或组件选项对象。Vue 会根据is属性的值来动态地加载和渲染相应的组件。
 
@@ -253,3 +267,60 @@ export default {
 5. 树摇（Tree Shaking）
 对于基于模块的工具链（如Webpack），局部注册的组件更容易被优化，因为未使用的组件可以在构建阶段被摇掉（Tree Shaking），减少最终的包大小。而全局注册的组件则更难被摇掉，因为构建工具很难确定它们是否在某处被使用。
 
+## vue3 如何监听数组变化
+watch，监听数组变量或者数组长度
+watchEffect
+
+```
+import { reactive, watch } from "vue";
+
+const state = reactive({
+  arr: [1, 2, 3],
+});
+
+watch(
+  () => state.arr,
+  (newValue, oldValue) => {
+    console.log("数组变化了", newValue, oldValue);
+  }
+);
+```
+
+## 虚拟DOM
+高效的 DOM 操作：虚拟 DOM 是一种在内存中表示真实 DOM 结构的树形数据结构。在 Vue 3 中，当数据发生变化时，首先会在虚拟 DOM 上进行比较和计算，确定最小化的 DOM 操作集合，然后再将这些操作应用到真实 DOM 上。这样可以避免直接频繁地操作真实 DOM，从而提高性能。
+
+跨平台开发支持：虚拟 DOM 使得 Vue 3 不仅可以在浏览器中运行，还可以通过一些工具和技术进行跨平台开发。
+
+Vue 3 对虚拟 DOM 的优化
+
+静态提升（Static Hoisting）：Vue 3 在编译阶段会分析组件的模板，将静态的节点提升到渲染函数之外。这样在每次渲染时，不需要为静态节点创建新的虚拟 DOM 节点，从而减少了虚拟 DOM 的创建和比较开销。
+
+补丁算法优化：Vue 3 对虚拟 DOM 的补丁算法进行了优化，使得在更新 DOM 时更加高效。新的补丁算法可以更快地找到需要更新的节点，减少不必要的比较和操作。
+
+事件处理优化：在 Vue 3 中，事件处理也进行了优化。对于静态的事件监听器，同样会在编译阶段进行提升，减少了每次渲染时的创建和绑定开销。
+
+## defineModel
+defineModel 是 Vue新增的语法糖，用于在 `<script setup>` 中快速声明一个可双向绑定的数据模型。它自动生成 modelValue 和 update:modelValue，极大简化了实现 v-model 的逻辑，并且支持具名模型、类型校验和默认值，是未来推荐使用的双向绑定方式。
+```
+const props = defineProps(['modelValue'])
+const emit = defineEmits(['update:modelValue'])
+```
+
+reactive：
+主要用于创建响应式对象。它接收一个普通的 JavaScript 对象，并将其转换为响应式对象，使得对这个对象的属性进行修改时，可以触发依赖这个对象的组件重新渲染。
+
+defineModel：
+主要用于在组合式函数中简化双向绑定的实现。它通常与reactive等响应式函数一起使用，自动解包响应式对象的属性，使得这些属性可以在模板中直接使用，无需通过.value来访问，并且方便与v-model指令配合实现双向绑定。
+
+## defineEmits
+defineEmits是一个用于定义组件触发的自定义事件的函数。
+```
+import { defineEmits } from "vue";
+
+const emits = defineEmits(["eventWithArgs", "eventWithoutArgs"]);
+
+function someFunction() {
+  const argValue = "some value";
+  emits("eventWithArgs", argValue);
+}
+```
