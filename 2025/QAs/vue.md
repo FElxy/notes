@@ -267,6 +267,12 @@ export default {
 5. 树摇（Tree Shaking）
 对于基于模块的工具链（如Webpack），局部注册的组件更容易被优化，因为未使用的组件可以在构建阶段被摇掉（Tree Shaking），减少最终的包大小。而全局注册的组件则更难被摇掉，因为构建工具很难确定它们是否在某处被使用。
 
+## vue2 如何监听数组变化
+1. 拦截数组的变异方法：Vue 使用一个数组的代理隔着来拦截七个变异数组方法（push、pop、shift、unshift、splice）和 sort 方法以及 reverse 方法。对这些方法的调用会被重新定义，以保证当它们被调用时，视图会重新渲染。
+2. Vue.set 和 Vue.delete：Vue 提供了两个全局函数 Vue.set 和 Vue.delete，这些函数确保任何对数组进行的直接设置或删除操作都能够触发视图更新。
+3. 不直接使用索引赋值：直接进行索引赋值操作（如 vm.items[indexOfItem] = newValue）不会触发视图更新，因为这是一种不能被 Object.defineProperty 拦截的操作。为了避免这个陷阱，你应该使用 Vue.set 代替索引赋值。
+4. 附加属性：Vue 会为每个项目的数组添加一些附加属性，这些属性可以触发一些视图渲染。
+
 ## vue3 如何监听数组变化
 watch，监听数组变量或者数组长度
 watchEffect
@@ -324,3 +330,34 @@ function someFunction() {
   emits("eventWithArgs", argValue);
 }
 ```
+
+
+## 组合式函数 和 vue2 mixins 对比， 有何优劣
+在 Vue2 中，我们通过 mixins 实现逻辑复用，但 mixins 本质是“注入式继承”，会带来命名冲突和逻辑来源不清的问题，也不利于 TypeScript 推断。
+Vue3 使用组合式函数替代 mixins，它通过函数封装逻辑，使用局部变量和返回值，逻辑来源明确、类型友好，能将同一逻辑聚合在一起，提高可维护性和可复用性，是更符合现代前端架构的设计方式。
+
+在 Vue2 中，逻辑是按“选项类型”组织的（data、methods、computed 分散管理），同一业务逻辑被拆散在不同区域中，形成逻辑交叉。
+Vue3 的组合式 API 是按“功能逻辑”组织代码的，每个组合函数封装一类业务逻辑，实现真正的逻辑聚合与关注点分离。这使得代码更清晰、更易维护和复用，也更符合现代软件架构 SoC 原则。
+
+## 如何提升复用逻辑
+一、组合式函数（Composables）
+二、自定义指令
+三、混入（Mixins）
+四、函数式组件
+
+## 如何处理异步加载组件
+Vue 3 提供了 defineAsyncComponent 方法，使得定义和使用异步组件变得简单。你可以通过传递一个函数，该函数返回一个 import() 调用（返回 Promise），来动态加载组件。
+```
+const AsyncComponent = defineAsyncComponent(() => import("./components/AsyncComponent.vue"));
+```
+在 Vue 2 中，异步组件的定义略有不同，你可以直接在组件注册时提供一个返回 Promise 的工厂函数。
+```
+Vue.component("async-component", () => import("./components/AsyncComponent.vue"));
+```
+
+## hashrouter browserRouter
+服务器支持
+hashchange
+historyAPI
+
+## keep-alive

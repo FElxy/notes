@@ -1062,3 +1062,142 @@ Safari / iOS 环境更严格（默认约 50MB～500MB）；
 求职动机： 你为什么想看新的机会？你对下一份工作最大的期望是什么？（技术挑战、团队、业务方向等）
 
 https://www.yuque.com/yuqueyonghua2m9wj/web_food/ftkiwu
+
+## 其他
+### 原生 js 如何进行监听路由的变化
+Hash 路由可以通过 hashchange 事件监听变化；
+History 路由需要重写 history.pushState 和 history.replaceState，同时监听 popstate 事件，因为浏览器默认不会为 pushState 触发事件。通过手动触发自定义事件即可实现对所有路由变化的监听。
+```
+(function() {
+  const pushState = history.pushState;
+  history.pushState = function(...args) {
+    pushState.apply(history, args);
+    window.dispatchEvent(new Event('pushstate'));
+    window.dispatchEvent(new Event('locationchange'));
+  };
+
+  const replaceState = history.replaceState;
+  history.replaceState = function(...args) {
+    replaceState.apply(history, args);
+    window.dispatchEvent(new Event('replacestate'));
+    window.dispatchEvent(new Event('locationchange'));
+  };
+
+  window.addEventListener('popstate', () => {
+    window.dispatchEvent(new Event('locationchange'));
+  });
+})();
+
+window.addEventListener('locationchange', function () {
+  console.log('路由已改变：', location.pathname + location.search + location.hash);
+});
+
+```
+
+## 统计全站每一个静态资源加载耗时， 该如何做
+要统计全站每一个静态资源（如图片、JS 脚本、CSS 样式表等）的加载耗时，可以借助浏览器的 Performance API，特别是利用 PerformanceResourceTiming 接口来获取资源加载的详细时间信息。
+
+步骤
+1. 使用 PerformanceObserver： 创建一个 PerformanceObserver 实例来监听资源加载事件，能够实时收集性能数据，而且对性能影响较小。
+2. 过滤静态资源类型： 通过检查 initiatorType 属性，筛选出静态资源（例如 img、script、css 等）的加载事件。
+3. 计算和展示耗时： 对每个静态资源的加载耗时进行计算并展示。资源的耗时可以通过 duration 属性直接获取。
+
+## websocket 底层原理
+WebSocket 底层基于 TCP 实现全双工通信，它首先用 HTTP 协议发起握手请求，通过 Upgrade: websocket 头完成协议升级，服务器返回 101 状态后，两端就切换为 WebSocket 协议进行通信。
+握手完成后，不再走 HTTP，而是使用 WebSocket 自定义的数据帧在 TCP 上双向传输。每条消息都封装成帧，包含 FIN、Opcode、Payload 等字段。客户端数据必须使用掩码传输，保证安全。
+WebSocket 连接长期保持，通过 Ping/Pong 实现心跳检测，支持低延迟、大并发的实时通信，是 HTTP 的补充而不是替代。
+
+## cookie的组成
+名称：cookie 的名称（键），通常是一个字符串。
+值：cookie 的值，通常也是一个字符串。
+失效时间：cookie 失效的时间，过期时间通常存储在一个 expires 属性中，以便浏览器自动清除失效的 cookie。
+作用路径：cookie 的作用路径，只有在指定路径下的请求才会携带该 cookie。
+作用域：cookie 的作用域，指定了该 cookie 绑定的域名，可以使用 domain 属性来设置。
+
+Set-Cookie: user=john; expires=Sat, 01 Jan 2022 00:00:00 GMT; path=/; domain=example.com
+
+## html rel 属性 的参数 preload和prefetch 的作用
+preload针对的是当前页面需要加载的资源，使用preload加载的资源会提前下载，但是并不会立即执行，而且等到使用的时候才会执行。
+
+```
+<link rel="preload" as="script" href='https://min.js'>
+```
+rel: preload或者prefetch，表示预加载的方式。必填（rel的值很多，这里只考虑预加载的情况）
+as: 表示预加载资源的类型。必填
+href: 表示预加载资源的地址。必填
+
+preload VS defer
+
+和preload一样，defer的script资源也会将下载和执行过程分离。不同的是，preload的资源是由开发者来确定何时执行，defer的script资源是由浏览器来决定何时执行。
+
+prefetch针对的资源是用户下个浏览的页面需要的资源，可以在当前页面开始预下载，提高下个页面渲染的速度。
+
+preload针对的资源是当前页面需要的资源，下载的优先级很高
+prefetch针对的资源是下个页面需要的资源，下载的优先级很低，有空的时候才下载
+
+## 函数声明和函数表达式
+函数声明是使用 function 关键字创建的函数，会被提升，可以在声明之前调用，而且在整个作用域内都可访问。
+函数表达式是将函数赋值给变量或作为其他表达式的一部分创建的，不会被提升，必须在定义之后才能使用，且只能在其所在的变量或表达式作用域内访问。
+
+## 检测变量类型
+typeof
+Object.prototype.toString.call
+instanceof
+constructor
+Array.isArray
+
+## long Task
+主线程一次只能处理一个任务（任务按照队列执行）。当任务超过某个确定的点时，准确的说是50毫秒，就会被称为长任务(Long Task)。
+
+那解决Long Task的方式有如下几种：
+
+使用setTimeout分割任务
+使用async/await分割任务
+isInputPending
+专门编排优先级的api: Scheduler.postTask()
+使用 web worker，处理逻辑复杂的计算
+
+## 安全
+跨站脚本攻击（Cross-Site Scripting, XSS）：XSS攻击利用了 Web 应用程序对用户输入的不当处理，以将恶意代码注入到 Web 页面中。当用户访问包含恶意代码的页面时，攻击者可以利用这些代码窃取用户的敏感信息、劫持用户会话等。
+- 输入过滤，
+- 对特殊字符进行转义，
+- CSP（Content Security Policy）：CSP是一种浏览器安全机制，可以限制 Web 页面可以加载哪些资源。
+- HttpOnly Cookie：通过设置 HttpOnly 标志，可以防止脚本访问 Cookie。这可以防止攻击者窃取用户的身份验证信息。
+
+跨站请求伪造（Cross-Site Request Forgery, CSRF）：CSRF攻击利用了用户已经登录了受信任网站的身份，通过在受害者的浏览器中执行恶意代码，将伪造的请求发送到受信任网站上，从而执行某些操作或者获取某些信息。
+- 随机化 Token：为每个请求生成一个随机化的 Token，将 Token 放入表单中，并在服务器端进行验证。这可以防止攻击者伪造合法的请求。
+- 使用 Referer 验证：在服务器端进行 Referer 验证，只允许来自合法来源的请求。这可以防止攻击者在自己的网站上放置恶意代码，进行 CSRF 攻击。
+- 使用验证码：在某些敏感操作上，比如修改密码、删除数据等，可以要求用户输入验证码。这可以降低攻击者的成功率，因为攻击者很难获取验证码。
+
+## Proxy Reflect
+
+Proxy 是拦截器，用于监听对象上的各种操作；Reflect 是执行器，提供与 Proxy 拦截方法对应的默认行为。
+在 Proxy 中，我们通常使用 Reflect 来执行原本对象的默认操作，从而避免直接操作 target 对象，提高代码的规范性和可维护性。两者结合体现了 ES6 对“元编程”的支持。
+
+| 好处             | 说明                                         |
+| -------------- | ------------------------------------------ |
+| ✅ 行为更统一        | Reflect 操作失败时返回 false，而不像某些 Object 操作那样抛异常 |
+| ✅ 与 Proxy 保持一致 | Reflect 的方法名称和 Proxy 的拦截方法一一对应             |
+| ✅ 避免硬编码        | 不需要写 `target[key] = value` 这种直接操作          |
+
+Reflect 是一个内置对象，提供与 Object 类似的方法，但它的行为更规范、更一致，并且返回值更标准（成功返回 true 或具体值，失败返回 false，而不是抛异常）。
+
+当用 Proxy 拦截时，如果你想在执行自己的逻辑后继续执行默认行为，就会使用 Reflect 来完成这个默认动作：
+
+```
+const proxy = new Proxy(obj, {
+  get(target, key, receiver) {
+    console.log('拦截get:', key);
+    return Reflect.get(target, key, receiver); // 执行默认操作
+  },
+  set(target, key, value, receiver) {
+    console.log('拦截set:', key, value);
+    return Reflect.set(target, key, value, receiver); // 执行默认设置
+  }
+});
+
+```
+
+## HSTS
+HTTP Strict-Transport-Security（HSTS）是一种安全策略，它通过 HTTP 头部告诉浏览器只能通过安全的 HTTPS 连接访问网站，从而增加网站的安全性。HSTS 有助于防止恶意攻击者通过中间人攻击（如SSL剥离攻击）窃取敏感信息。
+

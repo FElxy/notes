@@ -404,3 +404,19 @@ key 是用来唯一标识列表中的每个节点，帮助 React 在进行 Diff 
 
 为什么不能用 index 作为 key
 使用 index 时，如果列表发生插入/删除操作，index 会改变，导致 React 错误判断节点身份
+
+## 合成事件
+React 合成事件 = 统一封装的事件对象 + 顶层事件委托 + 批量更新优化机制
+
+React 的合成事件是 React 在原生事件之上实现的一套统一事件系统。
+它通过事件委托，将所有事件统一绑定到根节点，然后在事件触发时根据虚拟 DOM 找到对应组件并触发回调。
+合成事件对象（SyntheticEvent）对不同浏览器进行了兼容性封装，并且支持事件池和批量更新机制，从而提高应用性能和可控性。
+React17 之后，事件委托改为绑定在应用根节点，以增强与原生事件的共存能力。
+
+## 获取页面静态资源
+const resources = window.performance.getEntriesByType('resource');
+
+## react lazy import 实现懒加载的原理是什么？
+React.lazy 是基于 ES 动态 import 实现的，通过 webpack 打包拆分代码，只有在组件真正被渲染时才加载对应 chunk。
+React.lazy 将 import 返回的 Promise 包装为一个特殊的 Lazy Fiber 节点，在渲染过程中如果遇到 pending 状态，就会让出控制权，进入 Suspense fallback 界面。
+当 Promise resolve 后，React 再次渲染真实组件，实现懒加载和异步渲染。
