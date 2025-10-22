@@ -313,6 +313,22 @@ export default ParentComponent;
 
 3. 对函数式编程思想的运用：Hooks 通过纯函数和闭包来处理状态和副作用，鼓励使用不可变数据和函数组合，提升代码的可预测性和简洁性。
 
+### 为什么不能在循环、条件或嵌套函数中调用 Hooks？
+核心原因是 React 依赖 Hook 的调用顺序 来正确关联状态和对应的 Hook。
+
+React 内部为每个组件维护了一个 Hook 链表，每次调用 Hook 时，React 就按顺序移动到链表的下一个节点。在重新渲染时，React 依赖完全一致的调用顺序，才能把正确的状态返回给对应的 Hook。
+
+如果我们在条件或循环中使用 Hook，就会破坏这种顺序一致性。比如第一次渲染时条件为真调用了某个 Hook，第二次渲染时条件为假跳过了它，这样后面所有的 Hook 都会错位，导致状态混乱。
+```
+// ❌ 危险的代码
+if (condition) {
+  useState('first');  // 第一次渲染：这个 Hook 存在
+}                     // 第二次渲染：condition 为 false，这个 Hook 被跳过
+useState('second');   // 现在这个 Hook 拿到了 'first' 的状态！
+```
+
+## hook是什么时候调用
+
 ## 实现原理
 ### useState实现原理
 
@@ -420,3 +436,46 @@ const resources = window.performance.getEntriesByType('resource');
 React.lazy 是基于 ES 动态 import 实现的，通过 webpack 打包拆分代码，只有在组件真正被渲染时才加载对应 chunk。
 React.lazy 将 import 返回的 Promise 包装为一个特殊的 Lazy Fiber 节点，在渲染过程中如果遇到 pending 状态，就会让出控制权，进入 Suspense fallback 界面。
 当 Promise resolve 后，React 再次渲染真实组件，实现懒加载和异步渲染。
+
+
+## Portals 作用是什么， 有哪些使用场景？
+React Portals 提供了一种将子节点渲染到存在于父组件以外的 DOM 节点的方式。
+
+React Portals 的作用：
+父子结构逃逸, 样式继承独立, 事件冒泡正常
+
+场景：模态框、通知、浮动菜单、全屏组件
+```
+class Modal extends React.Component {
+  render() {
+    // 使用 ReactDOM.createPortal 将子元素渲染到 modal-root 中
+    return ReactDOM.createPortal(
+      // 任何有效的 React 孩子元素
+      this.props.children,
+      // 一个 DOM 元素
+      document.getElementById("modal-root")
+    );
+  }
+}
+```
+
+## 是如何处理组件更新和渲染的？
+
+React的更新渲染可以概括为三个核心阶段：
+
+首先，触发更新。当组件的state、props或消费的Context发生变化时，就会触发更新流程。
+
+然后进入渲染阶段，这是纯JS计算的过程。React会重新执行组件函数，生成新的虚拟DOM树，然后通过高效的Diff算法对比新旧两棵树的差异。这里React会尽量复用已有的DOM节点，比如列表渲染时通过key来跟踪元素 identity。
+
+最后是提交阶段，React将计算出的差异一次性批量更新到真实DOM上。这个阶段还会按顺序执行相关的生命周期和Effects：先是useLayoutEffect同步执行，然后是useEffect异步执行。
+
+在实际项目中，我们经常会用React.memo、useCallback这些API来优化不必要的子组件重渲染，提升应用性能。
+
+整体来说，React通过这种虚拟DOM和差异对比的机制，让我们可以用声明式的方式开发，同时保证了不错的运行时性能。
+
+更新和渲染流程：
+- 当组件的 state 或者 props 发生变化时，React 会将新的 props 和 state 比较之前的，根据比较结果决定是否进行更新。
+- 如果 shouldComponentUpdate、PureComponent 或 React.memo 表示不需要更新，React 将不会进行更新。
+- 如果需要更新，React 会调用 render 方法以及相关的生命周期方法或 Hooks，这个过程会创建一个虚拟 DOM 树。
+- React 之后会对比新的虚拟 DOM 树与上一次更新时的虚拟 DOM 树，通过 DOM diffing 算法判断在哪进行实际的 DOM 更新。
+- 应用必要的 DOM 更新到实际的 DOM 树上，如果有必要，调用 getSnapshotBeforeUpdate 和 componentDidUpdate 方法。
