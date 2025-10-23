@@ -45,6 +45,16 @@ Teleport 是 Vue 3 在 Renderer 层面引入的特殊节点，通过 mount 和 m
 当与 Suspense 或异步渲染结合时，Teleport 由 scheduler 调度，分配优先级，确保 DOM 移动在正确时机发生，不影响父组件渲染顺序。
 本质上，它体现了 Vue 3 Renderer 的可插拔架构设计，Teleport 是一个“逻辑归属在组件树，渲染归属在外部容器”的抽象节点类型。
 
+## diff
+Vue3的diff算法采用了一种称为"逐层比较"的策略，即从根节点开始逐层比较虚拟DOM树的节点。具体的比较过程如下：
+
+1. 对比两棵虚拟DOM树的根节点，判断它们是否相同。如果不相同，则直接替换整个根节点及其子节点，无需进一步比较。
+2. 如果根节点相同，则对比它们的子节点。这里采用了一种称为"双端比较"的策略，即同时从两棵树的头部和尾部开始比较子节点。
+3. 从头部开始，依次对比两棵树的相同位置的子节点。如果两个子节点相同，则继续比较它们的子节点。
+4. 如果两个子节点不同，根据一些启发式规则（如节点类型、key值等），判断是否需要替换、删除或插入子节点。
+5. 继续比较下一个位置的子节点，直到两棵树的所有子节点都被比较完。
+
+
 ## 有哪些内置组件
 <component>动态组件
 
@@ -361,3 +371,57 @@ hashchange
 historyAPI
 
 ## keep-alive
+
+
+## 路由守卫
+全局前置守卫 beforeEach
+
+全局解析守卫 beforeResolve
+
+全局后置钩子 afterEach
+
+组件内
+```
+const Home = {
+    template: `...`,
+    beforeRouteEnter(to, from) {
+        // 此时组件实例还未被创建，不能获取this
+    },
+    beforeRouteUpdate(to, from) {
+        // 当前路由改变，但是组件被复用的时候调用，此时组件已挂载好
+    },
+    beforeRouteLeave(to, from) {
+        // 导航离开渲染组件的对应路由时调用
+    }
+}
+```
+
+
+## ref、toRef、toRefs 区别
+ref(value: T): Ref<T>：创建一个响应式数据引用。
+
+toRef(object: object, key: string | symbol): ToRef：创建一个指向另一个响应式对象的响应式引用。
+```
+const state = reactive({
+  name: 'John',
+  age: 30
+});
+
+const nameRef = toRef(state, 'name'); // 创建指向 state.name 的引用
+
+console.log(nameRef.value); // 输出: "John"
+```
+toRefs(object: T): ToRefs<T>：将一个响应式对象的所有属性转换为响应式引用。使用 toRefs 将对象的所有属性转换为响应式引用：
+```
+const state = reactive({
+  name: 'John',
+  age: 30
+});
+
+const refs = toRefs(state); // 将 state 中的所有属性转换为响应式引用
+
+console.log(refs.name.value); // 输出: "John"
+console.log(refs.age.value); // 输出: 30
+
+```
+

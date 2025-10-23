@@ -28,9 +28,23 @@ Fiber 通过增量渲染、可中断与恢复、链表结构和优先级调度�
 
 工作原理：
 调度：Fiber 引入了新的调度机制，允许 React 根据任务的优先级来调度任务。React 会根据任务的紧急程度将任务放入不同的队列中，并按照队列的顺序执行任务。
+
 渲染：在渲染阶段，React 会遍历组件树，并构建一个 Fiber 树。Fiber 树中的每个节点代表一个组件，并包含组件的状态、属性等信息。
+
 更新：当组件的状态或属性发生变化时，React 会触发更新。Fiber 会根据变化的类型和优先级来决定如何更新组件。
+
 提交：在更新阶段完成后，React 会将 Fiber 树转换为实际的 DOM 树，并提交给浏览器进行渲染。
+
+#### fiber结构
+每个Fiber节点有个对应的React element
+```
+// 指向父级Fiber节点
+this.return = null;
+// 指向子Fiber节点
+this.child = null;
+// 指向右边第一个兄弟Fiber节点
+this.sibling = null;
+```
 
 #### fiber 是如何实现时间切片的？
 React Fiber 实现时间切片主要依赖于两个核心功能：任务分割和任务优先级。
@@ -88,6 +102,12 @@ React虚拟DOM的原理是：
 
 React通过虚拟DOM树的比较，避免了直接操作真实DOM树带来的性能问题，因为直接操作真实DOM树会带来大量的重排和重绘，而React的虚拟DOM树的比较和更新是基于JavaScript对象进行的，不会导致页面的重排和重绘。
 总结起来，React虚拟DOM的原理就是：通过比较虚拟DOM树的不同，批量的更新真实的DOM树，从而提高页面的性能。
+
+### 虚拟DOM 一定会比直接操作 真实 DOM 快吗
+1. 虚拟DOM不一定会比操作原生DOM更快。(首次渲染需要创建虚拟DOM)
+2. 虚拟DOM的优势在于节点进行改动的时候尽量减少开销
+3. 框架的本质是提升开发效率，让我们的注意力更集中于数据
+
 ### diff算法
 React Diff是React中用于更新Virtual DOM的算法它的目的是在最小化DOM操作的同时，尽可能快地更新组件。它通过比较Virtual DOM树的前后两个状态来确定哪些部分需要更新。
 React Diff算法的核心思想是尽可能地复用已有的DOM节点。当Virtual DOM中的某个节点发生变化时，React会先比较该节点的属性和子节点是否有变化，如果没有变化，则直接复用该节点。如果有变化，则会在该节点的父节点下创建一个新的节点，并将新的属性和子节点赋值给该节点。
@@ -479,3 +499,24 @@ React的更新渲染可以概括为三个核心阶段：
 - 如果需要更新，React 会调用 render 方法以及相关的生命周期方法或 Hooks，这个过程会创建一个虚拟 DOM 树。
 - React 之后会对比新的虚拟 DOM 树与上一次更新时的虚拟 DOM 树，通过 DOM diffing 算法判断在哪进行实际的 DOM 更新。
 - 应用必要的 DOM 更新到实际的 DOM 树上，如果有必要，调用 getSnapshotBeforeUpdate 和 componentDidUpdate 方法。
+
+## memo 和 useMemo
+React.memo 的作用是优化函数组件的渲染性能，它可以比较组件的 props 和 state 是否发生变化，如果没有变化，就不会重新渲染。
+
+useMemo 的作用是缓存计算结果，从而避免重复计算，它接受一个计算函数和一个依赖项数组，当依赖项发生变化时，计算函数就会重新计算，返回一个新的结果，否则就会使用之前的缓存结果。
+
+## [React] 如何实现路由守卫
+`<Route>` 组件：可以在路由配置中定义特定路由的守卫逻辑。例如，可以设置 render 属性或者 component 属性来渲染组件，并在渲染前进行守卫逻辑的判断。
+```
+  const requireAuth = (Component) => {
+    return () => {
+      if (isAuthenticated()) {
+        return <Component />;
+      } else {
+        history.push("/login");
+        return null;
+      }
+    };
+  };
+<Route path="/home" render={requireAuth(Home)} />
+```
