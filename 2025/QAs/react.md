@@ -477,6 +477,15 @@ useEffect(() => {
 函数组件、Hook组件
 在 React 中父组件不能直接调用子组件的方法，但我们可以通过 ref 配合 forwardRef 和 useImperativeHandle 在函数组件中显式暴露子组件方法给父组件调用。
 
+### useRef、ref、forwardsRef 的区别是什么
+1. ref：ref 是 React 中用于访问 DOM 元素或组件实例的方法。在函数组件中，可以使用 useRef Hook 来创建一个 ref 对象，然后将其传递给需要引用的元素或组件。在类组件中，可以直接在类中定义 ref 属性，并将其设置为元素或组件的实例。
+
+2. useRef：useRef 是 React 中的 Hook，用于创建一个 ref 对象，并在组件生命周期内保持其不变。useRef 可以用于访问 DOM 元素或组件实例，并且在每次渲染时都会返回同一个 ref 对象。通常情况下，useRef 更适合用于存储不需要触发重新渲染的值，例如定时器的 ID 或者其他副作用。
+
+3. forwardRef：forwardRef 是一个高阶组件，用于将 ref 属性转发给其子组件。通常情况下，如果一个组件本身并不需要使用 ref 属性，但是其子组件需要使用 ref 属性，那么可以使用 forwardRef 来传递 ref 属性。forwardRef 接受一个函数作为参数，并将 ref 对象作为第二个参数传递给该函数，然后返回一个新的组件，该组件接受 ref 属性并将其传递给子组件。
+
+简而言之，ref 是 React 中访问 DOM 元素或组件实例的方法，useRef 是一个 Hook，用于创建并保持一个不变的 ref 对象，forwardRef 是一个高阶组件，用于传递 ref 属性给子组件。
+
 ### forwardRef作用是什么？
 forwardRef 是 React 提供的一个高阶函数，它可以让你在函数组件中访问子组件的 ref，并把该 ref 传递给子组件。
 
@@ -573,3 +582,24 @@ useMemo 的作用是缓存计算结果，从而避免重复计算，它接受一
   };
 <Route path="/home" render={requireAuth(Home)} />
 ```
+
+## 构建组件的方式
+Class Components（类组件）
+Function Components（函数组件）
+Higher-Order Components（高阶组件）
+React.cloneElement
+React.createElement
+
+## useEffect的第二个参数，如何判断依赖是否发生变化
+React 会保存上一次的依赖数组，每次渲染后逐个用 Object.is 比较当前依赖和上一次是否一致。只要其中任意一个依赖的引用或值发生变化，effect 就会被重新执行。对象、数组、函数必须保持引用稳定，否则每次都会触发。
+
+React 实际使用的是 Object.is 进行比较，它比 === 更准确，能处理 NaN 和 -0 等边界情况。
+
+Object.is() 方法是严格相等比较，而 "===" 操作符也是严格相等比较，但 "==" 操作符是相等比较。
+
+严格相等比较（===）要求比较的两个值在类型和值上完全相同才会返回 true。
+相等比较（==）会进行类型转换，将两个值转换为相同类型后再进行比较。
+Object.is() 方法对于一些特殊的值比较更准确：
+
+对于 NaN 和 NaN 的比较，Object.is(NaN, NaN) 返回 true，而 NaN === NaN 返回 false。
+对于 +0 和 -0 的比较，Object.is(+0, -0) 返回 false，而 +0 === -0 返回 true。

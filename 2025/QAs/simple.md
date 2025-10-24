@@ -44,6 +44,13 @@ Node.js 也有事件循环，但分为多个阶段（timers、poll、check等）
 6. close callbacks：执行关闭事件的回调（如 socket.on('close')）。
 
 
+nextTick > 微任务 > setTimeout > setImmediate
+
+process.nextTick 最先执行，它属于 Node 特有的 microtask queue，优先于 Promise 微任务。
+然后是微任务（如 Promise.then）。
+接下来进入事件循环的宏任务阶段，setTimeout 在 timers 阶段执行，
+setImmediate 在 check 阶段执行。通常 setTimeout 比 setImmediate 先执行，但在 I/O 回调中，setImmediate 会先执行。
+
 #### ✅ `var`、`let`、`const` 的区别是什么？为什么存在暂时性死区？
 var 是函数作用域，会变量提升，声明前访问值为 undefined；
 let 和 const 是块级作用域，也会被提升，但在声明前处于“暂时性死区”，访问会报错；
@@ -1247,3 +1254,26 @@ CSS 不会阻塞 DOM 的解析，但会阻塞页面渲染，因为浏览器必�
 数据验证
 计算属性
 日志
+
+## requestAnimationFrame
+requestAnimationFrame 是一种优化动画性能的方法，它会在浏览器重绘之前执行指定的回调函数。相比于传统的 setInterval 或 setTimeout 方法，requestAnimationFrame 会在浏览器的下一次重绘之前执行回调函数，能够更好地与浏览器的渲染机制结合，减少页面的卡顿和闪烁。
+
+requestAnimationFrame 并不一定每秒都会执行 60 次，它会根据浏览器的刷新频率来自动调整执行次数，保证动画的流畅性。
+
+##  axios withCredentials 
+一个配置选项，用于处理跨源请求时是否携带用户凭证（cookies、HTTP 认证信息等）
+
+服务器需要设置适当的 CORS（跨源资源共享）响应头，如Access-Control-Allow-Credentials: true，并且指定允许的源Access-Control-Allow-Origin不能为通配符*，而必须是具体的源地址。
+
+## 需要在跨域请求中携带另外一个域名下的 Cookie 该如何操作
+设置响应头部的Access-Control-Allow-Credentials字段为true，Access-Control-Allow-Origin字段为指定的域名
+并且请求头部中添加withCredentials字段为true。
+
+credentials: 'include',
+
+## 进程和线程
+进程是资源分配的基本单位，每个进程拥有独立的内存空间，一个进程崩溃不会影响其他进程。
+线程是进程中的执行单元，同一进程内多个线程共享内存和资源，因此线程之间通信效率高，但也存在互相影响的问题。
+线程的创建和切换比进程更轻量，适合做并发任务。
+
+一个程序至少有一个进程，一个进程至少有一个线程。进程更稳定、更隔离，线程更轻量、更高效，这是多核并发优化的关键。

@@ -82,3 +82,16 @@ function printPersonInfo(person: Person) {
 let person = { name: 'Alice', age: 25 };
 printPersonInfo(person); // 输出: Name: Alice, Age: 25
 ```
+
+## 枚举和常量枚举的区别
+
+```
+// 枚举
+enum Color { Red, Green, Blue }
+
+// 常量枚举
+const enum Color { Red, Green, Blue }
+```
+枚举会被编译时会编译成一个对象，可以被当作对象使用
+
+const 枚举会在 typescript 编译期间被删除，const 枚举成员在使用的地方会被内联进来，避免额外的性能开销
