@@ -70,6 +70,8 @@ esbuild 是一个超快的编译打包工具，而 Vite 是基于 esbuild 构建
 
 ---
 
+#### webpack 的 loader 和 plugin 的区别以及优化
+
 #### **5. 解释一下 Tree Shaking 是什么？**
 
 **答：**

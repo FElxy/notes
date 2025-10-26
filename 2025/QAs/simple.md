@@ -1,7 +1,3 @@
-## 自我介绍
-
-## 项目介绍
-
 
 ## 🧩 一、JavaScript与TypeScript
 
@@ -1277,3 +1273,27 @@ credentials: 'include',
 线程的创建和切换比进程更轻量，适合做并发任务。
 
 一个程序至少有一个进程，一个进程至少有一个线程。进程更稳定、更隔离，线程更轻量、更高效，这是多核并发优化的关键。
+
+
+## 大文件上传，webworker 怎么样使用的，子进程和主进程是怎么通信的
+对于大文件上传，我们核心采用 分片上传 的方案。前端将文件切成多个小块，并发上传，最后由服务端合并。
+
+在这个过程中，计算文件哈希是一个非常耗时的操作，如果放在主线程会导致页面卡顿。所以我们会使用 Web Worker 把它放到后台线程去执行。
+
+Web Worker 和主线程的通信是通过 postMessage 实现的：
+
+主线程用 worker.postMessage() 给 Worker 发送文件数据。
+
+Worker 内部用 self.onmessage 接收并处理。
+
+处理完后，Worker 用 self.postMessage() 将哈希结果发回。
+
+主线程用 worker.onmessage 接收结果，然后继续后续的上传流程。
+
+这样就实现了 计算与UI的分离，保证了用户体验的流畅。
+
+## webview 桥接知道是什么吗
+
+## 项目中的 SSE 说一下，是 http 请求吗，header 要怎么写，大模型里面主要就是用的 sse
+
+## node 的模块和 js 的模块的区别，他们对 webpack 的 treeshreeking 有什么影响吗？
