@@ -55,6 +55,7 @@ esbuild 是一个超快的编译打包工具，而 Vite 是基于 esbuild 构建
 与 Vite 插件的协作：Vite 有丰富的插件生态系统，Esbuild 可以和这些插件协作来完成更复杂的构建任务。例如，在处理 CSS、TS（TypeScript）等文件时，Vite 插件可以在 Esbuild 的基础上进行进一步的处理。当 Esbuild 完成对 JavaScript 模块的初步打包后，Vite 插件可以对打包后的文件进行优化，如压缩、添加代码注释等操作。
 
 在不同模块类型处理中的分工：对于不同类型的模块，Vite 和 Esbuild 有不同的处理方式。Esbuild 主要专注于 JavaScript 模块的快速打包和转换，而 Vite 则负责整体的构建流程协调，包括对 CSS 文件的处理（如解析@import语句）、静态资源的处理（如图片、字体的加载路径优化）以及模块热替换（HMR）等开发阶段的功能。例如，在处理一个包含 JavaScript、CSS 和图片的项目时，Esbuild 会快速打包 JavaScript 模块，Vite 则会确保 CSS 正确加载并且图片资源能够被正确引用。
+
 ---
 
 #### **4. Webpack 和 Vite 的核心区别是什么？**
