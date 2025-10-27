@@ -1028,12 +1028,26 @@ Worker 内部用 self.onmessage 接收并处理。
 
 这样就实现了 计算与UI的分离，保证了用户体验的流畅。
 
-## webview 桥接知道是什么吗
 
 ## 项目中的 SSE 说一下，是 http 请求吗，header 要怎么写，大模型里面主要就是用的 sse
+SSE 是基于 HTTP 的单向实时推送，配置关键就是禁用缓冲，保持长连接。客户端通过 Accept: text/event-stream 发起请求，服务端返回流式数据。Nginx 要关闭 proxy_buffering 和 proxy_cache，启用 chunked 传输，并保持 HTTP/1.1 长连接，否则会导致消息阻塞或断流。
+
+POST /v1/chat/completions
+Content-Type: application/json
+Authorization: Bearer xxx
+Accept: text/event-stream
+
+HTTP/1.1 200 OK
+Content-Type: text/event-stream
+Cache-Control: no-cache
+Connection: keep-alive
+
+
 
 ## node 的模块和 js 的模块的区别，他们对 webpack 的 treeshreeking 有什么影响吗？
-
+Node 使用的是 CommonJS 模块系统，是运行时加载的，模块依赖是动态的，Webpack 无法在编译阶段分析哪些代码未被使用，所以不能 Tree-Shaking。
+而 ES Module 是静态结构，支持编译时分析，Webpack、Rollup 可以基于 import/export 做死代码消除。
+所以如果一个库仍然输出 CommonJS 格式，即使我们在代码中只用它的一个方法，打包时也会全部打进去，导致 Tree Shaking 失败。
 
 ## Prompt Engineering
 Prompt Engineering（提示词工程）：这是调用的核心。我深知一个模糊的请求会得到无用的结果。
@@ -1048,3 +1062,5 @@ Prompt Engineering（提示词工程）：这是调用的核心。我深知一�
 
 ## rag
 
+## webview桥接
+WebView 桥接是前端网页和原生 App 之间通信的机制。当 H5 页面在 WebView 中运行时，它本身没有调用系统能力的权限，需要通过 Bridge 来向原生发消息，由原生执行功能并回调结果给 H5。桥接通常通过注入 JS 接口
