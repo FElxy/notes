@@ -9,6 +9,14 @@ Vue 2.x 和 3.x 响应式原理的核心区别在于**数据拦截的实现方�
 
 ---
 
+用 Object.defineProperty() 劫持对象属性的 getter / setter。
+
+每个属性都被包装成可观察对象（Observer）。
+
+依赖收集器（Dep）在访问属性时记录 watcher。
+
+当属性变化时，触发对应 watcher → 执行 update() → 重新渲染视图。
+
 ### Vue 2.x
 
 *   **实现方式**：使用 `Object.defineProperty` 递归地劫持对象的**已有属性**的 `getter` 和 `setter`。
