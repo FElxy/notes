@@ -680,6 +680,40 @@ Suspense SSR 和新根 API，这些提升了性能和开发体验。
 
 React 19 是一次架构级革新，它通过 Server Components 和 Actions API 把 React 从“前端渲染框架”提升为“前后端一体化框架”，实现减少 JS 体积、直连数据库、自动表单处理等功能，是未来 React 应用的主流模式。
 
+
+## ✔ React 18 的主要新特性
+
+* **自动批处理（Automatic Batching）**：更新不仅限于 React 事件处理器内部，Promise、setTimeout、原生事件处理器内的多次 `setState` 也会被合并为一次渲染，从而减少重渲染次数。 ([mtechzilla.com][1])
+* **并发特性初步支持（Concurrent Features）**：引入 “转场（Transitions）”的概念，用来区分紧急更新（如用户输入）与可中断/延迟更新（如页面切换）。例如 `startTransition`、`useDeferredValue`。 ([AppSignal Blog][2])
+* **新的客户端／服务端渲染 API**：例如 `ReactDOM.createRoot`、`hydrateRoot` 取代旧的 `ReactDOM.render`、`ReactDOM.hydrate`。服务端支持 `renderToPipeableStream`、`renderToReadableStream` 等流式渲染。 ([阿里云开发者社区][3])
+* **对 `Suspense` 的增强**：在服务端也支持 `Suspense`，使慢组件不会阻塞整个页面渲染。 ([freecodecamp.org][4])
+* **严格模式增强（Strict Mode Behaviors）**：用于开发模式下模拟组件多次挂载／卸载、增强对并发模式适配的能力。 ([React][5])
+
+---
+
+## ✔ React 19 的主要新特性
+
+（这是更前沿的版本，可凸显你对新技术趋势的关注）
+
+* **Actions API**：引入用于异步操作（如表单提交、数据变更）的 Actions 概念，支持自动管理 pending 状态、乐观更新（optimistic updates）、错误回退。 ([React][6])
+* **新 Hook：`useActionState`、`useOptimistic`、`useFormStatus`** 等：分别用于管理 Action 状态、乐观 UI、表单提交状态。 ([React][6])
+* **`use` API**：允许在 render 中读取 Promise 或资源，配合 `Suspense` 使用。 ([React][6])
+* **`ref` 作为 prop 支持**：在函数组件中可以直接把 `ref` 当做 prop 使用，无需 `forwardRef`。 ([React][6])
+* **静态 API（Static Site Generation）增强**：新增 `react-dom/static` 的 `prerender` 与 `prerenderToNodeStream`，用于静态预渲染和流式生成。 ([React][7])
+* **开发者体验 &型别支持增强**：更强的 TypeScript 支持、更好的错误报错（尤其 hydration mismatch）、降低第三方库依赖。 ([OneDev][8])
+
+---
+
+## 🤔 面试中可能追问的问题 &你如何答
+
+* **“Actions 和 Hooks 是如何改变你写表单/数据操作的方式？”**
+  可以说明：以前要手动管理 loading、error、reset 等状态，现在 Actions／useActionState 等 API 提供了更统一、更少 boilerplate 的方式。
+* **“你们项目如果升级到 React 19，会带来什么好处？有什么风险？”**
+  好处包括：表单/数据操作更简洁、并发体验更好、SSR/静态生成更强。风险包括：生态库兼容性、团队熟悉度、迁移成本。
+* **“Concurrent Rendering 默认为 React 19 那意味着什么？”**
+  可以说明：UI 响应性能更好，但也意味着组件必须更健壮（例如避免副作用滞留、确保可中断操作安全）。
+
+
 ### 如何监听路由变化？
 基于useEffect，和useLocation，通过useEffect监听当前location的变化
 ```
